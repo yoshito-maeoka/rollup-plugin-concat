@@ -26,7 +26,7 @@ var loadTree = function(path) {
 
 var concatFiles = function(magicStr, code, id) {
     var dir = path.dirname(id),
-        regex = /\/\/= concat(_tree)? ([^\n\r]+)/gi,
+        regex = options.regexp || /\/\/= concat(_tree)? ([^\n\r]+)/gi,
         changes = false;
     code.replace(regex, function(match, tree, target, index) {
         if (options.debug) console.log(`rollup-plugin-concat: processing "${match}" in "${id}"`);
@@ -52,7 +52,7 @@ module.exports = function(opts) {
                   map: magicStr.generateMap({ hires: true })
               };
             }
-            
+
             return null; // tell rollup to discard this result
         }
     };
