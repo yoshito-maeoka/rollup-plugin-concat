@@ -4,6 +4,7 @@ var os = require('os');
 var MagicString = require('magic-string');
 
 var options = {};
+var targetFiles = [];
 
 var ensureTrailingNewLine = function(code) {
   if (!code.endsWith(os.EOL)) code += os.EOL;
@@ -12,13 +13,14 @@ var ensureTrailingNewLine = function(code) {
 
 var load = function(path) {
     if (!jetpack.exists(path)) console.log(`ERROR: File not found at "${path}"`);
+    targetFiles.push(path);
     let code = ensureTrailingNewLine(jetpack.read(path));
     const magicStr = new MagicString(code);
     concatFiles(magicStr, code, path);
     return magicStr.toString();
 };
 
-var loadTree = function(path) {
+var loadTree = function (path) {
     return jetpack.find(path, { matching: '*.js' }).reduce(function(code, filePath) {
         return code + load(filePath);
     }, '');
@@ -44,16 +46,19 @@ module.exports = function(opts) {
     if (opts) options = opts;
     return {
         name: 'concat',
-        transform: function(code, id) {
+        transform: function (code, id) {
+            var this$1 = this;
             var magicStr = new MagicString(code);
             var changes = concatFiles(magicStr, code, id);
             if (changes) {
-              return {
-                  code: magicStr.toString(),
-                  map: magicStr.generateMap({ hires: true })
-              };
+                targetFiles.forEach(function (file) {
+                    return this$1.addWatchFile(file);
+                });
+                return {
+                    code: magicStr.toString(),
+                    map: magicStr.generateMap({ hires: true })
+                };
             }
-
             return null; // tell rollup to discard this result
         }
     };
