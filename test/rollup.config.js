@@ -1,6 +1,6 @@
 var concat = require('../');
 
 module.exports = {
-  plugins: [ concat() ],
-  format: 'cjs'
+    // format: 'cjs', /* commented out. format option should be in output option? */
+    plugins: [concat()]
 };
